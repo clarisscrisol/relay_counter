@@ -1,0 +1,15 @@
+module buffer(uartdone, head, tail);
+input uartdone;
+output head, tail;
+always@(*)
+begin
+  if(uartdone==1)
+    head=head+1;
+  else
+    head<=head;
+  end
+    if(head!=tail)
+      tail=tail+1;
+    else
+      tail<=tail;
+end
