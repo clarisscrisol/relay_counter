@@ -1,15 +1,18 @@
-module buffer(uartdone, head, tail);
+module headtail(uartdone, head, tail, datain, dataout);
+reg [7:0] buffer [0:7]
 input uartdone;
 output head, tail;
 always@(*)
 begin
   if(uartdone==1)
+     buffer[head]= datain;
     head=head+1;
   else
     head<=head;
   end
     if(head!=tail)
-      tail=tail+1;
+    dataout=buffer[tail]
+      tail=tail+1; 
     else
       tail<=tail;
 end
