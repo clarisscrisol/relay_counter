@@ -1,0 +1,59 @@
+module timer ( clock, start, reset, done, on, signalsecond, counter, seconds, done);
+input clock, start, reset;
+output done;
+wire signalsecond, on;
+signalsecond = 1'b0;
+
+always@(posedge start)
+begin
+	if(start==1'b1)
+		on<=1;
+	else
+		on<=0;
+	end
+end
+
+always@(posedge clock)
+begin
+	if(reset == 1'b0 || on == 1'b0)
+		 counter<=0;
+	else
+		  counter = counter+1;
+	end
+	if(counter==50000000)
+		signalsecond<=1'b1;
+		counter<=0;
+	else
+		signalsecond<=1'b0;
+	end
+end
+
+always@(posedge signalsecond)
+begin
+	if(reset==1'b0 || on == 1'b0)
+		seconds<=0;
+	else
+		seconds<=seconds+1;
+	end
+
+	if(seconds>=5)
+		done<=1;
+		on<=0;
+	else
+		done<=0;
+		on<=1;
+	end
+	
+end
+
+
+
+
+
+
+
+
+
+
+
+	
