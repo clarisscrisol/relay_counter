@@ -2,8 +2,8 @@ module fifobuffer # (parameter abits = 8, dbits = 5)
 (
       input clock,
       input reset,
-      input wr,
-      input rd,
+      input wr,                             //rx_done_tick
+      input rd,                             //rd_done from data interpreter
       input [dbits-1:0] din,
       output empty,
       output full,
@@ -58,7 +58,7 @@ always @(*)
     full_next = full_reg;     //defaults state stays the same
     empty_next = empty_reg;   //defaults state stays the same
    
-  case({db_wr,db_rd})
+  case({wr,rd})
     
   //2'b00: do nothing LOL..
      
