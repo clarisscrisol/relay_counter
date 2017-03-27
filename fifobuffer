@@ -1,4 +1,4 @@
-module fifobuffer # (parameter abits = 8, dbits = 5)
+module fifobuffer # (parameter abits = 3, dbits = 8)
 (
       input clock,
       input reset,
