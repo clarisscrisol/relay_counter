@@ -1,0 +1,19 @@
+module decoder # (parameter dbit = 8)
+(
+      input clock,
+      input reset,
+      input sent,
+      input [dbits-1:0] datain,
+      output [dbits-1:0] dataout,
+      output [6:0] address_reg,
+      output read);
+      
+reg [dbits-1:0] out;
+reg read;
+reg [6:0] address_reg;
+
+always @(posedge sent or negedge sent)
+    begin
+    read <= 1'b0;
+    end
+    
