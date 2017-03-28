@@ -38,9 +38,9 @@ always @(posedge clock or posedge reset)
 always @(*)
       begin
             heads_after = heads_reg + 1;
-            heads_after = heads_reg + 1;
+            tails_after = tails_reg + 1;
             heads_next = heads_reg;
-            heads_next = heads_reg;
+            tails_next = tails_reg;
 
       if(read && ~write)
 	      begin
@@ -48,7 +48,7 @@ always @(*)
             end
       else if(write && ~read)
             begin
-		heads_next = tails_after;
+		heads_next = heads_after;
             end
       else if(write && read)
             begin
