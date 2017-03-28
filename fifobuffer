@@ -1,12 +1,14 @@
-module fifobuffer # (parameter abits = 3, dbits = 8)
+module buffer # (parameter abits = 3, dbits = 8)
 (
       input clock,
       input reset,
       input write,                        // uart rx done                          
       input read,                         // read done           
       input [dbits-1:0] din,
-      output [dbits-1:0] dout   );
- 
+      output [dbits-1:0] dout,
+      output sent);
+
+reg sent;
 reg [dbits-1:0] out;
 reg [dbits-1:0] regarray[2**abits-1:0];
 reg [abits-1:0] heads_reg, heads_next, heads_after;
@@ -21,6 +23,7 @@ always @(posedge clock)
       if (read && (heads_reg != tails_reg))
             begin
             out <= regarray[tails_reg];
+	    sent <= !sent;
             end
  
 always @(posedge clock or posedge reset)
