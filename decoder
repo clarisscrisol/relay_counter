@@ -100,7 +100,12 @@ always @*
 					begin
 					state_next = stop;
 					end
-					
+				else
+					begin
+				// timer expired even before the whole 4 bytes has been sent
+				// an error should be displayed or something	
+					state_next = stop;
+					end
 				end
 				
 			stop:                                        	// stop
