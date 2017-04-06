@@ -6,26 +6,108 @@ module decoder # (parameter dbit = 8)
       input [dbits-1:0] datain,
       output [dbits-1:0] dataout,
       output [6:0] address_reg,
-      output read);
+      output done);
       
 reg [dbits-1:0] out;
-reg read;
+reg done = 1'b1;
 reg [6:0] address_reg;
+reg [1:0] state_reg, state_next;
+reg write, read;
+
+localparam [1:0]
+		idle  = 2'b00,	// idle state, waiting for done to go low
+		start = 2'b01,	// start state, identify the first byte to read or write
+		data  = 2'b10,  // data state, shift in 4 bytes of data if read
+		stop  = 2'b11;  // stop state, done to go high
+
+always @(posedge clock or posedge reset)
+      if (reset)
+            begin
+            done <= 1'b1;
+            state_reg <= idle;          
+            end
+      else
+	      begin
+            state_reg <= state_next;
+            end
 
 always @(posedge sent or negedge sent)
     begin
-    read <= 1'b0;
+    done <= 1'b0; //data has been received, initiate to read data
     end
-always@(head!=tail)
-    begin
-    write<=1'b1;
-    if(write==1 && head!=tail)
-      count<=count+1;
-      if(count==4)
-            datain <= address_reg;
-      end
-    end
-    end
-    end module
+
+always @*
+      begin
+		// defaults
+      	state_next   = state_reg;
+            read = 1'b0;
+            write = 1'b0;
+		start_timer = 1'b1;
+            
+		case (state_reg)
+			idle:                                           // idle, wait for done to go low
+				if (~done)                                // when done goes low start reading the data
+					begin
+					state_next = start;             // go to start state
+					end
+					
+			start:                                          // start, decode the first byte
+				begin 
+				if(datain[0] == 0)
+                              begin
+					read = 1'b1                         // '0' start bit means to READ
+                              address_reg = {1'b0, datain[6:0]};  // output the address to be READ
+                              
+                              //add a module that will send command to the RAM to READ the following REGISTER ADDR
+                              //once done sending data, go to stop state and assert done
+                              
+                              state_next = stop;
+					done = 1'b1;
+                              end
+                              
+				else if (datain[0] == 1)                 // '1' start bit means to WRITE
+					begin
+                              write = 1'b1; 
+                              address_reg = {1'b0, datain[6:0]};  // output the address to be READ
+                              
+                              //add a module that will send command to the RAM to WRITE the following REGISTER ADDR
+                              //start sending data and start the timer module
+					
+                              start_timer = 1'b1;
+                              state_next = data;
+					end 
+				end
+				
+			data:                                           // data, shift in 8 data bits to data reg
+				begin
+				if(baud_tick)
+					baud_next = baud_reg + 1;       // increment baud_reg every tick  
+					
+				else if(baud_reg == 16)                 // when baud_reg counted 16 ticks...
+					begin
+					d_next    = {rx, d_reg[7:1]};   // left shift in rx data to received data reg
+					n_next    = n_reg + 1;          // increment data bit count
+					baud_next = 0;                  // reset baud tick counter to 0
+					end
+					
+				else if(n_reg == 8)                     // once 8 data bits have been shifted in...
+					state_next = stop ;             // move to stop state
+				end
+				
+			stop:                                           // stop, rx line is high for 16 baud_ticks (stop bit)
+				begin
+				if(baud_tick)
+					baud_next = baud_reg + 1;       // increment baud_reg every tick 
+					
+				else if (baud_reg == 16)                // once 16 baud_ticks have been counted
+					begin
+					state_next   = idle;            // go to idle state
+					rx_done_tick = 1'b1;            // assert receive done tick
+					end
+				end        
+		endcase
+		end
+
+      
    
     
