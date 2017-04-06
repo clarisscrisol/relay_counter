@@ -16,4 +16,16 @@ always @(posedge sent or negedge sent)
     begin
     read <= 1'b0;
     end
+always@(head!=tail)
+    begin
+    write<=1'b1;
+    if(write==1 && head!=tail)
+      count<=count+1;
+      if(count==4)
+            datain <= address_reg;
+      end
+    end
+    end
+    end module
+   
     
